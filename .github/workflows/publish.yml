@@ -15,9 +15,11 @@ jobs:
       - uses: actions/checkout@v7
 
       - name: Download and verify release binaries
+        id: prepare
         env:
           GH_TOKEN: ${{ github.token }}
           RELEASE_TAG: ${{ github.event.release.tag_name }}
+          PRERELEASE: ${{ github.event.release.prerelease }}
         run: |
           set -euo pipefail
           [[ "$RELEASE_TAG" =~ ^v[0-9]+\.[0-9]+\.[0-9]+(-[0-9A-Za-z.-]+)?$ ]]
@@ -33,6 +35,14 @@ jobs:
             test -x ".build/linux/$arch/wikilayer"
           done
           test "$(.build/linux/amd64/wikilayer version)" = "$version"
+          {
+            echo 'tags<<EOF'
+            echo "ghcr.io/wikilayer/wikilayer:$RELEASE_TAG"
+            if [[ "$PRERELEASE" != true ]]; then
+              echo 'ghcr.io/wikilayer/wikilayer:latest'
+            fi
+            echo EOF
+          } >> "$GITHUB_OUTPUT"
 
       - uses: docker/setup-qemu-action@v4
       - uses: docker/setup-buildx-action@v4
@@ -49,6 +59,4 @@ jobs:
           platforms: linux/amd64,linux/arm64
           push: true
           build-args: VERSION=${{ github.event.release.tag_name }}
-          tags: |
-            ghcr.io/wikilayer/wikilayer:${{ github.event.release.tag_name }}
-            ghcr.io/wikilayer/wikilayer:latest
+          tags: ${{ steps.prepare.outputs.tags }}

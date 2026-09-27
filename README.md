@@ -63,5 +63,5 @@ The private source repository publishes Linux amd64 and arm64 release
 archives with SHA-256 checksums to this repository's [Releases](https://github.com/wikilayer/docker/releases).
 Publishing a release here starts the image build. The workflow verifies both
 archives, builds both architectures from the public Dockerfile, and pushes
-`ghcr.io/wikilayer/wikilayer:<tag>` and `:latest`. Development pushes do not
-start image builds.
+`ghcr.io/wikilayer/wikilayer:<tag>`. Stable releases also update `:latest`.
+Development pushes do not start image builds.
